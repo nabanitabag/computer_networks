@@ -8,11 +8,11 @@ No VM images, no Python version headaches, no manual POX patching.
   - Windows users: ensure WSL2 backend is enabled
 - Java JDK 11+ and `ant` on your host (for compiling your code)
 
-## Quick Start (Students)
+## Quick Start
 
 ```bash
 # 1. Download the assignment repo
-cd ~/assign2
+cd ~/assign
 
 # 2. Build the Docker images (one-time)
 make docker-build
@@ -60,11 +60,11 @@ startup order via the `scripts/` helpers.
 ## File Structure
 
 ```
-assign3/
+assign/
 ├── docker/
 │   └── Dockerfile            # Container image definition
 ├── docker-compose.yml        # Container orchestration
-├── Makefile                  # Student & TA commands
+├── Makefile                  # Student commands
 ├── scripts/
 │   ├── start-env.sh          # Starts mininet + POX
 │   ├── start-routers.sh      # Starts Java routers
