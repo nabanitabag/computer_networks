@@ -1,0 +1,113 @@
+# CS 640 — Docker Environment for Virtual Router Assignments
+
+A containerized environment for CS 640 networking assignments (Assignments 2 & 3).
+No VM images, no Python 2/3 headaches, no manual POX patching.
+
+## Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Mac, Windows, Linux)
+  - Windows users: ensure WSL2 backend is enabled
+- Java JDK 11+ and `ant` on your host (for compiling your code)
+
+## Quick Start (Students)
+
+```bash
+# 1. Clone the assignment repo
+git clone <repo-url> ~/assign3
+cd ~/assign3
+
+# 2. Build the Docker images (one-time)
+make docker-build
+
+# 3. Compile your Java code
+make build
+
+# 4. Start the environment with a topology
+make start-pair        # pair_rt.topo (2 routers)
+make start-k4          # k4.topo (4 routers)
+
+# 5. In a separate terminal, start your routers
+make routers-pair      # starts r1 and r2
+make routers-k4        # starts r1, r2, r3, r4
+
+# 6. Run pings from the mininet CLI
+make cli               # attach to mininet CLI
+
+# 7. Tear everything down
+make stop
+```
+
+## Quick Start (TAs / Grading)
+
+```bash
+# Grade a student submission
+make grade-setup TEAM=g002-bhargava SRC=~/submissions/g002/src
+
+# Run pair_rt tests
+make grade-pair
+
+# Run k4 tests
+make grade-k4
+
+# Reset between students
+make grade-reset
+```
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────┐
+│  Host Machine                                    │
+│  ┌────────────────┐                              │
+│  │ Student's src/ │ ← student edits here         │
+│  └───────┬────────┘                              │
+│          │ mounted into container                 │
+│  ┌───────▼──────────────────────────────────┐    │
+│  │  Docker Container (privileged)           │    │
+│  │                                          │    │
+│  │  ┌──────────┐  ┌─────┐  ┌────────────┐  │    │
+│  │  │ Mininet  │  │ POX │  │ Java Router│  │    │
+│  │  │ (py3)    │←→│(py3)│←→│ (JDK 11)   │  │    │
+│  │  └──────────┘  └─────┘  └────────────┘  │    │
+│  └──────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────┘
+```
+
+All three components run in a single privileged container because Mininet
+requires host-level network namespace access. Docker Compose orchestrates
+startup order via the `scripts/` helpers.
+
+## File Structure
+
+```
+assign3/
+├── docker/
+│   └── Dockerfile            # Container image definition
+├── docker-compose.yml        # Container orchestration
+├── Makefile                  # Student & TA commands
+├── scripts/
+│   ├── start-env.sh          # Starts mininet + POX
+│   ├── start-routers.sh      # Starts Java routers
+│   └── run-tests.sh          # Automated grading tests
+├── pox_module/cs640/         # POX modules (Python 3 compatible)
+├── topos/                    # Topology files
+├── http_server/              # Web server for hosts
+├── src/                      # ← Student Java source code
+├── build.xml                 # Ant build file
+└── README.md                 # This file
+```
+
+## Troubleshooting
+
+**"Cannot connect to Docker daemon"**
+→ Make sure Docker Desktop is running.
+
+**"Permission denied" on Linux**
+→ Add yourself to the docker group: `sudo usermod -aG docker $USER` then log out/in.
+
+**Windows: "mininet requires privileged mode"**
+→ Ensure WSL2 backend is enabled in Docker Desktop settings.
+
+**Routers fail to connect (KeyError: 'r1')**
+→ Wait for POX to show all `connected` lines before starting routers.
+   The Makefile handles this automatically with `scripts/start-env.sh`.

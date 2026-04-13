@@ -1,0 +1,34 @@
+# CS 640 — Virtual Router Environment
+#
+# Usage:
+#   docker compose up -d
+#   docker compose exec cs640 bash
+#   docker compose down
+
+services:
+  cs640:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: cs640-router
+    privileged: true        # Required for Mininet (network namespaces)
+    stdin_open: true
+    tty: true
+    volumes:
+      # Student source code — edit on host, build in container
+      - ./src:/opt/assign/src
+      # Build file
+      - ./build.xml:/opt/assign/build.xml
+      # Topology files (override defaults if needed)
+      - ./topos:/opt/assign/topos
+      # HTTP server
+      - ./http_server:/opt/assign/http_server
+      # Mininet topology runner
+      - ./run_mininet.py:/opt/assign/run_mininet.py
+      # Grading output
+      - ./grading-output:/opt/assign/grading-output
+      # optional: expose POX for debugging
+      - ./pox:/opt/pox  
+    working_dir: /opt/assign
+    # No ports needed — everything runs inside the container
+    command: bash

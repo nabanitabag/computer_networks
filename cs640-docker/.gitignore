@@ -1,0 +1,31 @@
+# Build artifacts
+*.class
+*.jar
+build/
+dist/
+
+# Generated runtime files
+ip_config
+arp_cache
+rtable.r*
+*.pcap
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Grading output
+grading-output/
+
+# Docker volumes
+.docker/

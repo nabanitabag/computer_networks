@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """
 Start up a virtual network topology for CS640
@@ -13,6 +13,7 @@ from mininet.util import quietRun, ipParse, ipStr
 
 import sys
 import string
+import time
 
 IPCONFIG_FILE = "./ip_config"
 ARPCACHE_FILE = "./arp_cache"
@@ -26,13 +27,30 @@ class VNetHost:
         self.gw = gw
         self.host = None
 
+    def ping(self, ip):
+        info('*** %s PINGS TWICE %s\n' % (self.name, ip))
+        self.host.cmd('ping -c 2 -n %s' % (ip))
+
+    def disable_v6(self):
+        self.host.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+        self.host.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
+        self.host.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
+
+    def curl(self, ip):
+        info('*** %s HTTP REQ TO %s\n' % (self.name, ip))
+        self.host.cmd('curl %s' % (ip))
+
+    def startcapture(self):
+        info('*** Starting packet capture on host %s\n' % self.name)
+        self.host.cmd('tcpdump -ni %s-eth0 -s 65535 -w /tmp/%s.pcap &' % (self.name, self.name))
+
     def startsshd(self):
         "Start sshd on host"
         stopsshd()
         info( '*** Starting sshd\n' )
         intf = self.host.defaultIntf()
         banner = '/tmp/%s.banner' % self.name
-        self.host.cmd( 'echo "Welcome to %s at %s" >  %s' % ( self.name, self.ip, self.banner ) )
+        self.host.cmd( 'echo "Welcome to %s at %s" >  %s' % ( self.name, self.ip, banner ) )
         self.host.cmd( '/usr/sbin/sshd -o "Banner %s"' % banner, '-o "UseDNS no"' )
         info( '***', self.name, 'is running sshd on', intf, 'at', self.ip, '\n' )
 
@@ -40,17 +58,14 @@ class VNetHost:
         "Start simple Python web server on hosts"
         info( '*** Starting SimpleHTTPServer on host', self.host, '\n' )
         self.host.cmd('cd ./http_server/; nohup python2.7 ./webserver.py &')
-#self.host.cmd( 'cd ./http_%s/; nohup python2.7 ./webserver.py &' % (self.host.name) )
 
     def configureRoute(self, host):
         info( '*** Configuring routing for %s\n' % host)
         self.host = host
         for intf in host.intfList():
-#            info('\t%s IP: %s/%d\n' % (intf, self.ip, self.prefix))
             intf.setIP('%s/%d' % (self.ip, self.prefix))
-        if (self.gw != None):
+        if self.gw is not None:
             intf = host.defaultIntf()
-#           info('\tDefault route: gw %s dev %s\n' % (self.gw, intf))
             host.cmd('route add default gw %s dev %s' % (self.gw, intf))
 
     def configureArp(self, arpcache):
@@ -151,9 +166,8 @@ class VNetTopo(Topo):
                             self.graph.add_node(nameB)
                         self.graph.add_edge(nameA, nameB, 1)
                     else:
-                        sys.exit("Error in topology configuration line: %s" 
+                        sys.exit("Error in topology configuration line: %s"
                                 % line)
-                f.close()
 
                 for router in self.vrouters.values():
                     for i in range(1, router.ifaces+1):
@@ -175,9 +189,8 @@ class VNetTopo(Topo):
                         iface = '%s-eth%d' % (router.name, count)
                         f.write('%s %s %s\n' % (iface, ip, '255.255.255.0'))
                         count = count + 1
-                f.close()
         except EnvironmentError:
-            sys.exit("Couldn't write IP file" % IPCONFIG_FILE)
+            sys.exit("Couldn't write IP file %s" % IPCONFIG_FILE)
 
     def write_arpcachefile(self):
         info( '*** Writing ARP cache file %s\n' % ARPCACHE_FILE)
@@ -189,15 +202,14 @@ class VNetTopo(Topo):
                     f.write('%s %s\n' % (iface.ip, iface.mac))
                     arpcache[iface.ip] = iface.mac
                 for vrouter in self.vrouters.values():
-                    ifaces = vrouter.switch.intfs.values()
-                    for i in range(1,len(ifaces)):
+                    ifaces = list(vrouter.switch.intfs.values())
+                    for i in range(1, len(ifaces)):
                         mac = ifaces[i].mac
                         ip = vrouter.ips[i-1]
                         f.write('%s %s\n' % (ip, mac))
                         arpcache[ip] = mac
-                f.close()
         except EnvironmentError:
-            sys.exit("Couldn't write ARP cache file" % ARPCACHE_FILE)
+            sys.exit("Couldn't write ARP cache file %s" % ARPCACHE_FILE)
         return arpcache
 
     def write_rtablefile(self, router):
@@ -229,7 +241,7 @@ class VNetTopo(Topo):
                     remotert = self.vrouters[remote.split('.')[0]]
                     remoteport = int(remote.split('.')[1])
                     info("Reach %s from %s via %s.%d and %s.%d\n" % (
-                            rt.name, router.name, localrt.name, 
+                            rt.name, router.name, localrt.name,
                             localport, remotert.name, remoteport))
                     gw = remotert.ips[remoteport-1]
                     for i in range(0, len(rt.ips)):
@@ -239,15 +251,12 @@ class VNetTopo(Topo):
                         subnet = ipStr(ipParse(ip) & ipParse(mask))
                         if (subnet in router.subnets):
                             continue
-                        f.write('%s %s %s eth%d\n' % (subnet, gw, mask, 
+                        f.write('%s %s %s eth%d\n' % (subnet, gw, mask,
                                     localport))
                         router.subnets.append(subnet)
-
-
-                f.close()
         except EnvironmentError:
-            sys.exit("Couldn't write IP file" % ipfile)
- 
+            sys.exit("Couldn't write rtable file %s" % rtablefile)
+
 def stopallsshd():
     "Stop *all* sshd processes with a custom banner"
     info( '*** Shutting down stale sshd/Banner processes ',
@@ -255,11 +264,16 @@ def stopallsshd():
 
 def stopallhttp():
     "Stop simple Python web servers"
-    info( '*** Shutting down stale SimpleHTTPServers', 
-        quietRun( "pkill -9 -f SimpleHTTPServer" ), '\n' )    
-    info( '*** Shutting down stale webservers', 
-        quietRun( "pkill -7 -f webserver.py" ), '\n' )    
-  
+    info( '*** Shutting down stale SimpleHTTPServers',
+        quietRun( "pkill -9 -f SimpleHTTPServer" ), '\n' )
+    info( '*** Shutting down stale webservers',
+        quietRun( "pkill -7 -f webserver.py" ), '\n' )
+
+def stopallcapture():
+    "Stop packet captures"
+    info( '*** Shutting down stale tcpdump',
+        quietRun( "pkill -2 -f tcpdump" ), '\n' )
+
 def prefixToMask(prefix):
     shift = 32 - prefix
     return ipStr((0xffffffff >> shift) << shift)
@@ -290,7 +304,7 @@ def dijkstra(graph, initial):
 
   nodes = set(graph.nodes)
 
-  while nodes: 
+  while nodes:
     min_node = None
     for node in nodes:
       if node in visited:
@@ -330,9 +344,19 @@ if __name__ == '__main__':
     net = Mininet( topo=topo, controller=RemoteController, autoSetMacs=True)
     net.start()
 
+    h1 = 0
+    h3 = 0
+    h4 = 0
     for vhost in topo.vhosts:
         node = net.get(vhost.name)
+        if vhost.name == "h1":
+            h1 = vhost
+        elif vhost.name == "h3":
+            h3 = vhost
+        elif vhost.name == "h4":
+            h4 = vhost
         vhost.configureRoute(node)
+        vhost.disable_v6()
         vhost.starthttp()
     for vrouter in topo.vrouters.values():
         node = net.get(vrouter.name)
@@ -342,6 +366,9 @@ if __name__ == '__main__':
         for vhost in topo.vhosts:
             vhost.configureArp(arpcache)
 
+    for vhost in topo.vhosts:
+        vhost.startcapture()
     CLI( net )
     stopallhttp()
+    stopallcapture()
     net.stop()
