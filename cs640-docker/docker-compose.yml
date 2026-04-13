@@ -28,7 +28,7 @@ services:
       # Grading output
       - ./grading-output:/opt/assign/grading-output
       # optional: expose POX for debugging
-      - ./pox:/opt/pox  
+      # - ./pox:/opt/pox  
     working_dir: /opt/assign
     # No ports needed — everything runs inside the container
     command: bash

@@ -20,12 +20,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ── Python 3 packages ────────────────────────────────────────────
 RUN pip3 install --no-cache-dir twisted zope.interface ltprotocol
 
-# ── POX (Python 3 compatible fork) ───────────────────────────────
-RUN git clone -b fangtooth https://github.com/noxrepo/pox.git /opt/pox
+# ── POX (Python 3 compatible branch) ─────────────────────────────
+RUN git clone -b gar-experimental https://github.com/noxrepo/pox.git /opt/pox
 
-# Apply Python 3 compatibility patches to POX
-COPY pox-patches/apply-patches.sh /tmp/apply-patches.sh
-RUN chmod +x /tmp/apply-patches.sh && /tmp/apply-patches.sh
 
 # ── cs640 POX modules (pre-patched for Python 3) ────────────────
 COPY pox_module/cs640/ /opt/pox/ext/cs640/

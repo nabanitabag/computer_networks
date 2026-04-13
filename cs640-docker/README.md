@@ -1,7 +1,6 @@
-# CS 640 — Docker Environment for Virtual Router Assignments
+# Docker containerized environment for Lab Assignments
 
-A containerized environment for CS 640 networking assignments (Assignments 2 & 3).
-No VM images, no Python 2/3 headaches, no manual POX patching.
+No VM images, no Python version headaches, no manual POX patching.
 
 ## Prerequisites
 
@@ -12,9 +11,8 @@ No VM images, no Python 2/3 headaches, no manual POX patching.
 ## Quick Start (Students)
 
 ```bash
-# 1. Clone the assignment repo
-git clone <repo-url> ~/assign3
-cd ~/assign3
+# 1. Download the assignment repo
+cd ~/assign2
 
 # 2. Build the Docker images (one-time)
 make docker-build
@@ -23,12 +21,10 @@ make docker-build
 make build
 
 # 4. Start the environment with a topology
-make start-pair        # pair_rt.topo (2 routers)
-make start-k4          # k4.topo (4 routers)
+make start TOPO=pair_rt   # pair_rt.topo (2 routers)
 
 # 5. In a separate terminal, start your routers
 make routers-pair      # starts r1 and r2
-make routers-k4        # starts r1, r2, r3, r4
 
 # 6. Run pings from the mininet CLI
 make cli               # attach to mininet CLI
@@ -37,38 +33,22 @@ make cli               # attach to mininet CLI
 make stop
 ```
 
-## Quick Start (TAs / Grading)
-
-```bash
-# Grade a student submission
-make grade-setup TEAM=g002-bhargava SRC=~/submissions/g002/src
-
-# Run pair_rt tests
-make grade-pair
-
-# Run k4 tests
-make grade-k4
-
-# Reset between students
-make grade-reset
-```
-
 ## Architecture
 
 ```
 ┌──────────────────────────────────────────────────┐
 │  Host Machine                                    │
 │  ┌────────────────┐                              │
-│  │ Student's src/ │ ← student edits here         │
+│  │      src/      │ ← student edits src here     │
 │  └───────┬────────┘                              │
-│          │ mounted into container                 │
+│          │ mounted into container                │
 │  ┌───────▼──────────────────────────────────┐    │
 │  │  Docker Container (privileged)           │    │
 │  │                                          │    │
-│  │  ┌──────────┐  ┌─────┐  ┌────────────┐  │    │
-│  │  │ Mininet  │  │ POX │  │ Java Router│  │    │
-│  │  │ (py3)    │←→│(py3)│←→│ (JDK 11)   │  │    │
-│  │  └──────────┘  └─────┘  └────────────┘  │    │
+│  │  ┌──────────┐  ┌─────┐  ┌────────────┐   │    │
+│  │  │ Mininet  │  │ POX │  │ Java Router│   │    │
+│  │  │ (py3)    │←→│(py3)│←→│ (JDK 11)   │   │    │
+│  │  └──────────┘  └─────┘  └────────────┘   │    │
 │  └──────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────┘
 ```
