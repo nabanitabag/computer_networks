@@ -8,7 +8,7 @@ set -e
 
 TOPO=${1:?Usage: start-env.sh <topo_file> [num_routers]}
 NUM_ROUTERS=${2:-2}
-WORKDIR=/opt/assign3
+WORKDIR=/opt/assign
 
 cd "$WORKDIR"
 
@@ -20,7 +20,7 @@ find . -name "*.pyc" -delete 2>/dev/null || true
 echo "=== Starting Mininet with $TOPO ==="
 
 # Start Mininet in background to generate config files
-python3 /opt/assign3/run_mininet.py "$TOPO" -a &
+python3 /opt/assign/run_mininet.py "$TOPO" -a &
 MININET_PID=$!
 
 # Wait for ip_config to be generated
@@ -51,7 +51,7 @@ POX_PID=$!
 sleep 3
 
 echo "=== Restarting Mininet ==="
-python3 /opt/assign3/run_mininet.py "$TOPO" -a &
+python3 /opt/assign/run_mininet.py "$TOPO" -a &
 MININET_PID=$!
 
 # Wait for OF connections

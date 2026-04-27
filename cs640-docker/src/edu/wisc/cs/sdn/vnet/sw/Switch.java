@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Aaron Gember-Jacobson
  */
-public class Switch extends Device 
+public class Switch extends Device implements Runnable
 {	
 	/** The MAC forwarding table for the switch */
     // private Map<MACAddress, MacEntry> macTable;
@@ -49,5 +49,9 @@ public class Switch extends Device
 		/* TODO: Handle packets                                             */
 		
 		/********************************************************************/
+	}
+
+	public void run() {
+		// To be implemented
 	}
 }

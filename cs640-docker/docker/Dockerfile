@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Java 11 for student router code
     default-jdk ant \
     # Networking tools
-    net-tools iputils-ping tcpdump curl wget iproute2 \
+    net-tools iputils-ping tcpdump curl wget iproute2 iperf \
     # Misc
     git sudo vim nano procps psmisc tmux \
     && rm -rf /var/lib/apt/lists/*
@@ -28,18 +28,18 @@ RUN git clone -b gar-experimental https://github.com/noxrepo/pox.git /opt/pox
 COPY pox_module/cs640/ /opt/pox/ext/cs640/
 
 # ── Working directory ────────────────────────────────────────────
-RUN mkdir -p /opt/assign3
-WORKDIR /opt/assign3
+RUN mkdir -p /opt/assign
+WORKDIR /opt/assign
 
 # ── Helper scripts ───────────────────────────────────────────────
 COPY scripts/ /opt/scripts/
 RUN chmod +x /opt/scripts/*.sh
 
 # ── Default topology files ───────────────────────────────────────
-COPY topos/ /opt/assign3/topos/
+COPY topos/ /opt/assign/topos/
 
 # ── HTTP server for hosts ────────────────────────────────────────
-COPY http_server/ /opt/assign3/http_server/
+COPY http_server/ /opt/assign/http_server/
 
 # ── OVS needs to be started inside the container ─────────────────
 COPY scripts/entrypoint.sh /entrypoint.sh

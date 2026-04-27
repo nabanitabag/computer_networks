@@ -3,7 +3,7 @@
 # Starts Java VirtualNetwork routers r1..rN in background
 
 NUM_ROUTERS=${1:?Usage: start-routers.sh <num_routers>}
-WORKDIR=/opt/assign3
+WORKDIR=/opt/assign
 
 cd "$WORKDIR"
 
