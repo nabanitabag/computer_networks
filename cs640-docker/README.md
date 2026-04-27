@@ -1,6 +1,6 @@
 # Docker containerized environment for Lab Assignments
 
-No VM images, no Python version headaches, no manual POX patching.
+No VM images, no manual POX patching, no Python version maintenance.
 
 ## Prerequisites
 
