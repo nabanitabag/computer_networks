@@ -74,7 +74,7 @@ assign/
 ├── http_server/              # Web server for hosts
 ├── src/                      # Java source code
 ├── build.xml                 # Ant build file
-└── README.md                 # This file
+└── README.md                 
 ```
 
 ## Troubleshooting
