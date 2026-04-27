@@ -43,7 +43,7 @@ make stop
 │  └───────┬────────┘                              │
 │          │ mounted into container                │
 │  ┌───────▼──────────────────────────────────┐    │
-│  │  Docker Container (privileged)           │    │
+│  │  Docker Container                        │    │
 │  │                                          │    │
 │  │  ┌──────────┐  ┌─────┐  ┌────────────┐   │    │
 │  │  │ Mininet  │  │ POX │  │ Java Router│   │    │
@@ -68,25 +68,16 @@ assign/
 ├── scripts/
 │   ├── start-env.sh          # Starts mininet + POX
 │   ├── start-routers.sh      # Starts Java routers
-│   └── run-tests.sh          # Automated grading tests
-├── pox_module/cs640/         # POX modules (Python 3 compatible)
+│   └── run-tests.sh          
+├── pox_module/cs640/         # POX modules 
 ├── topos/                    # Topology files
 ├── http_server/              # Web server for hosts
-├── src/                      # ← Student Java source code
+├── src/                      # Java source code
 ├── build.xml                 # Ant build file
 └── README.md                 # This file
 ```
 
 ## Troubleshooting
-
-**"Cannot connect to Docker daemon"**
-→ Make sure Docker Desktop is running.
-
-**"Permission denied" on Linux**
-→ Add yourself to the docker group: `sudo usermod -aG docker $USER` then log out/in.
-
-**Windows: "mininet requires privileged mode"**
-→ Ensure WSL2 backend is enabled in Docker Desktop settings.
 
 **Routers fail to connect (KeyError: 'r1')**
 → Wait for POX to show all `connected` lines before starting routers.
